@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Yugoime</title>
+
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
+}
+
+body {
+  min-height: 100vh;
+  background-image: url("IMG_0803.JPG"); /* PC par défaut */
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: -1;
+}
+
+/* BANNIÈRE MOBILE */
+@media (max-width: 768px) {
+  body {
+    background-image: url("IMG_mobile.JPG"); /* image mobile */
+    background-attachment: scroll;
+  }
+}
+
+/* PROFIL */
+.profile {
+  text-align: center;
+  margin-top: 60px;
+  margin-bottom: 30px;
+}
+
+.avatar {
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  border: 3px solid #fff;
+  object-fit: cover;
+  margin-bottom: 15px;
+  box-shadow: 0 0 20px rgba(255,255,255,0.4);
+}
+
+/* TEXTES */
+h1, .bio {
+  font-size: 1.8rem;
+  color: #fff;
+  margin-bottom: 10px;
+  background: linear-gradient(90deg, rgba(255,255,255,0.4), rgba(255,255,255,0.8), rgba(255,255,255,0.4));
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  position: relative;
+}
+
+/* LIENS */
+.links {
+  width: 100%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.links a {
+  background: rgba(0,0,0,0.25); /* transparent */
+  backdrop-filter: blur(6px);
+  color: #fff;
+  text-decoration: none;
+  padding: 12px 15px;
+  border-radius: 10px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  opacity: 0;
+  transition: opacity 0.6s ease, transform 0.3s ease;
+}
+
+.links a:hover {
+  background: rgba(35, 134, 54, 0.5);
+  transform: scale(1.05);
+}
+
+.links img {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+
+/* COMPTEUR, MUSIQUE, FEU */
+#visit-counter, .music-control, #fireworkBtn {
+  opacity: 1;
+}
+
+#visit-counter { margin-top: 20px; color: #aaa; }
+footer { margin-top: auto; font-size: 0.8rem; color: #aaa; margin-bottom: 15px; }
+
+/* MUSIQUE */
+.music-control { position: fixed; bottom: 20px; right: 20px; display: flex; align-items: center; gap: 10px; z-index: 10; }
+.music-btn { width: 48px; height: 48px; border-radius: 50%; border: none; background: rgba(0,0,0,0.75); color: white; font-size: 1.2rem; cursor: pointer; }
+#volumeSlider { width: 90px; accent-color: #238636; }
+
+/* FEU D’ARTIFICE */
+#fireworkBtn { position: fixed; bottom: 12px; left: 12px; width: 12px; height: 12px; border-radius: 50%; background: rgba(255,255,255,0.25); border: none; cursor: pointer; z-index: 20; }
+#fireworks { position: fixed; inset: 0; pointer-events: none; z-index: 15; }
+</style>
+</head>
+
+<body>
+
+<audio id="bg-music" loop preload="auto">
+  <source src="music.mp3" type="audio/mpeg">
+</audio>
+
+<div class="music-control">
+  <button class="music-btn" id="musicBtn" aria-label="Musique">▶️</button>
+  <input type="range" id="volumeSlider" min="0" max="100" value="70">
+</div>
+
+<button id="fireworkBtn"></button>
+<canvas id="fireworks"></canvas>
+
+<div class="profile">
+  <img src="avatar.jpg" class="avatar">
+  <h1 id="pseudo">Yugoime</h1>
+  <p class="bio" id="bio">Je construis en silence, le résultat fera du bruit.</p>
+</div>
+
+<div class="links">
+  <a href="https://www.instagram.com/yugoime/" target="_blank">
+    <img src="icons/instagram.png" alt="Instagram"> Instagram
+  </a>
+  <a href="https://tiktok.com/@yugoime" target="_blank">
+    <img src="icons/tiktok.png" alt="TikTok"> TikTok
+  </a>
+  <a href="https://snapchat.com/t/DKkVuGJz" target="_blank">
+    <img src="icons/snapchat.png" alt="Snapchat"> Snapchat
+  </a>
+</div>
+
+<div id="visit-counter">👀 Visites : ...</div>
+<footer>&copy; 2025 Yugoime</footer>
+
+<script>
+// Apparition progressive des boutons de réseaux
+window.addEventListener("load", () => {
+  const links = document.querySelectorAll(".links a");
+  links.forEach((link, index) => {
+    setTimeout(() => { link.style.opacity = 1; }, index * 400);
+  });
+});
+
+// Compteur simple
+const counter = document.getElementById("visit-counter");
+let visits = localStorage.getItem("yugoime_visits");
+if (!visits) visits = 1; else visits = parseInt(visits, 10) + 1;
+localStorage.setItem("yugoime_visits", visits);
+counter.textContent = "👀 Visites : " + visits;
+
+// Musique simple
+const music = document.getElementById("bg-music");
+const btn = document.getElementById("musicBtn");
+const volumeSlider = document.getElementById("volumeSlider");
+music.volume = volumeSlider.value / 100;
+volumeSlider.oninput = () => music.volume = volumeSlider.value / 100;
+btn.onclick = () => {
+  if(music.paused){ music.play(); btn.textContent="⏸️"; } 
+  else { music.pause(); btn.textContent="▶️"; }
+};
+
+// Feux d'artifice colorés
+const canvas = document.getElementById('fireworks');
+const ctx = canvas.getContext('2d');
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+let fireworks = [];
+
+class Firework {
+  constructor(x, y) {
+    this.x = x;
+    this.y = y;
+    this.particles = [];
+    for(let i=0; i<50; i++){
+      const angle = Math.random() * 2 * Math.PI;
+      const speed = Math.random() * 5 + 2;
+      const color = `hsl(${Math.random()*360}, 100%, 70%)`;
+      this.particles.push({
+        x: this.x,
+        y: this.y,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        alpha: 1,
+        color: color
+      });
+    }
+  }
+  update() {
+    this.particles.forEach(p => {
+      p.x += p.vx;
+      p.y += p.vy;
+      p.vy += 0.05;
+      p.alpha -= 0.02;
+    });
+    this.particles = this.particles.filter(p => p.alpha > 0);
+  }
+  draw() {
+    this.particles.forEach(p => {
+      ctx.fillStyle = `hsla(${p.color.match(/\d+/)[0]},100%,70%,${p.alpha})`;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, 2, 0, Math.PI*2);
+      ctx.fill();
+    });
+  }
+}
+
+function animate() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  fireworks.forEach(fw => {
+    fw.update();
+    fw.draw();
+  });
+  fireworks = fireworks.filter(fw => fw.particles.length > 0);
+  requestAnimationFrame(animate);
+}
+
+animate();
+
+// Lancer feu d'artifice au clic sur le bouton
+document.getElementById('fireworkBtn').addEventListener('click', () => {
+  const x = Math.random() * canvas.width;
+  const y = Math.random() * canvas.height / 2;
+  fireworks.push(new Firework(x, y));
+});
+
+// Redimensionnement
+window.addEventListener('resize', () => {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+});
+</script>
+
+</body>
+</html>
