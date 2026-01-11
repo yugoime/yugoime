@@ -170,12 +170,6 @@ window.addEventListener("load", () => {
   });
 });
 
-// Compteur simple
-const counter = document.getElementById("visit-counter");
-let visits = localStorage.getItem("yugoime_visits");
-if (!visits) visits = 1; else visits = parseInt(visits, 10) + 1;
-localStorage.setItem("yugoime_visits", visits);
-counter.textContent = "👀 Visites : " + visits;
 
 // Musique simple
 const music = document.getElementById("bg-music");
